@@ -11,5 +11,5 @@ of the latest academic year.
 
 ## Other Useful Links
 - official OOP ASE course resources can be found [here](https://www.acs.ase.ro/cpp-en)
-- OOP course [PowerPoint presentation](https://www.acs.ase.ro/Media/Default/documents/cpp/CatalinBoja/OOP%20CPP%20course%20lecture.pdf)
+- OOP course [PowerPoint presentation](https://github.com/catalinboja/cpp-2026/blob/main/support/CPP%20Course%20-%202026.pdf)
 - Prof. Boja's [course and lab examples](https://github.com/catalinboja/cpp-2026)
