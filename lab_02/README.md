@@ -490,6 +490,10 @@ Here, the original variable is not modified.
   <img src="https://github.com/acs-aburada/oop-2026/blob/main/lab_01/cpp_memory_2.jpg" alt="C++ Memory 2" width="300">
 </p>
 
+<p align="center">
+  <img src="https://github.com/acs-aburada/oop-2026/blob/main/lab_01/memory-layout.png" alt="C++ Memory 3" width="600">
+</p>
+
 So far, the variables we have used are created automatically as part of normal program execution.
 
 For example:
