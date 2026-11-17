@@ -28,13 +28,30 @@ public:
 
     void print() const
     {
-        std::cout << location << " | brand: " << static_cast<int>(brand)
+        std::string brandName;
+
+        switch (brand)
+        {
+        case Brand::GENERIC:
+            brandName = "GENERIC";
+            break;
+        case Brand::OMRON:
+            brandName = "OMRON";
+            break;
+        case Brand::BEURER:
+            brandName = "BEURER";
+            break;
+        }
+
+        std::cout << location << " | brand: " << brandName
             << " | heating price: " << heatingPrice
             << " | Readings (" << dayCount << "):";
+
         for (int i = 0; i < dayCount; i++)
         {
             std::cout << ' ' << temperatures[i];
         }
+
         std::cout << std::endl;
     }
 
