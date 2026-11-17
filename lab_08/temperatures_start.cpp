@@ -35,7 +35,7 @@ public:
         {
             std::cout << ' ' << temperatures[i];
         }
-        std::cout << '\n';
+        std::cout << std::endl;
     }
 
     ~MonthlyTemperatures()
@@ -51,5 +51,5 @@ int main()
 {
     MonthlyTemperatures month;
     month.print();
-    std::cout << "Objects: " << MonthlyTemperatures::getObjectCount() << '\n';
+    std::cout << "Objects: " << MonthlyTemperatures::getObjectCount() << std::endl;
 }
