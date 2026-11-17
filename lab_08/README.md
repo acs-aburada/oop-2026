@@ -4,25 +4,44 @@ Start with [temperatures_start.cpp](temperatures_start.cpp). The completed progr
 
 ## 1. Monthly Temperatures
 
-Store daily temperatures in a dynamically allocated array:
+Store a location, thermometer brand, heating price, and daily temperatures:
 
 ```cpp
+enum class Brand { GENERIC, OMRON, BEURER };
+
+// Inside the class:
+std::string location = "Unknown";
+Brand brand = Brand::GENERIC;
+float heatingPrice = 0.0F;
 double* temperatures = nullptr;
 int dayCount = 0;
+static unsigned int objectCount;
 ```
 
 The class owns the array. It must allocate, copy, and release it. An empty object has a null pointer and zero readings. A month can have up to 31 readings.
 
-Add a constructor that receives an array and its size:
+`heatingPrice` is non-negative. Temperature offsets do not change this price.
+
+`objectCount` counts currently existing objects. Each successful constructor, including copy and move constructors, increments it. The destructor decrements it. Assignment does not create an object, so it does not change the count.
+
+The shared counter is defined once outside the class:
+
+```cpp
+unsigned int MonthlyTemperatures::objectCount = 0;
+```
+
+Add a constructor that receives the readings, their count, a location, a brand, and a heating price:
 
 ```cpp
 double readings[] = {18, 20, 19};
-MonthlyTemperatures month(readings, 3);
+MonthlyTemperatures month(readings, 3, "Bucharest", Brand::OMRON, 2.5F);
 ```
 
 The constructor must copy the values into its own allocation, not keep a pointer to `readings`.
 
 The destructor releases the array using `delete[]`.
+
+The headers are `<iostream>` for console streams, `<string>` for `std::string`, and `<utility>` for `std::move`. Invalid arguments use string-literal throws, such as `throw "Invalid day index.";`, caught with `catch (const char* message)`.
 
 ## 2. Copy Constructor and Assignment
 
@@ -49,8 +68,10 @@ The example uses `setReadings` to allocate and copy the values:
 
 ```cpp
 MonthlyTemperatures(const MonthlyTemperatures& other)
+    : location(other.location), brand(other.brand), heatingPrice(other.heatingPrice)
 {
     setReadings(other.temperatures, other.dayCount);
+    objectCount++;
 }
 ```
 
@@ -64,13 +85,17 @@ MonthlyTemperatures& operator=(const MonthlyTemperatures& other)
 {
     if (this != &other)
     {
+        std::string copiedLocation = other.location;
         setReadings(other.temperatures, other.dayCount);
+        location = std::move(copiedLocation);
+        brand = other.brand;
+        heatingPrice = other.heatingPrice;
     }
     return *this;
 }
 ```
 
-`setReadings` prepares the new array before deleting the old one. Allocation failure therefore leaves the destination unchanged.
+The location is copied before replacing the readings. `setReadings` prepares the new array before deleting the old one. Allocation failure during these preparations leaves the destination unchanged.
 
 `this != &other` checks for self-assignment. Here, `&other` takes an address; it does not declare a reference.
 
@@ -83,10 +108,16 @@ Moving transfers ownership of the existing array:
 
 ```cpp
 MonthlyTemperatures(MonthlyTemperatures&& other) noexcept
-    : temperatures(other.temperatures), dayCount(other.dayCount)
+    : location(std::move(other.location)), brand(other.brand),
+      heatingPrice(other.heatingPrice),
+      temperatures(other.temperatures), dayCount(other.dayCount)
 {
+    other.location.clear();
+    other.brand = Brand::GENERIC;
+    other.heatingPrice = 0.0F;
     other.temperatures = nullptr;
     other.dayCount = 0;
+    objectCount++;
 }
 ```
 
@@ -104,7 +135,7 @@ The move constructor takes the pointer and resets the source so that its destruc
 
 Move assignment does the same transfer, but first releases the destination's previous array.
 
-In this class, moved-from objects are empty and can be reused with `setReadings`.
+In this class, moved-from objects have an empty location, a generic brand, zero heating price, and no readings. They remain valid and can be reused with `setReadings`.
 
 The destructor, copy constructor, copy assignment, move constructor, and move assignment form the **Rule of Five** for classes directly managing resources.
 
@@ -154,7 +185,7 @@ friend bool operator==(const MonthlyTemperatures& left,
                        const MonthlyTemperatures& right);
 ```
 
-Equality compares the reading counts and each stored value, not the array addresses. This example uses exact equality, suitable for checking unchanged copies.
+Equality compares the location, brand, heating price, reading counts, and each stored value, not the array addresses. This example uses exact equality, suitable for checking unchanged copies. The shared object counter is not part of equality.
 
 > [!IMPORTANT]
 > Both equality operands use `const &`: comparing them should neither copy nor modify them. The result is a `bool` value, not a reference.
@@ -227,10 +258,10 @@ std::cout << first << '\n' << second << '\n';
 std::cin >> first >> second;
 ```
 
-Input is a count followed by that many temperatures:
+Input is a one-word location, brand number, heating price, count, and temperatures. Brand numbers are `0` for GENERIC, `1` for OMRON, and `2` for BEURER:
 
 ```text
-3 18 20 19
+Bucharest 1 2.5 3 18 20 19
 ```
 
 The input operator reads into a temporary object and replaces the destination only when all readings succeed.
@@ -238,7 +269,7 @@ The input operator reads into a temporary object and replaces the destination on
 Keep prompts and error messages in `main`:
 
 ```cpp
-std::cout << "Enter day count, then temperatures:\n";
+std::cout << "Enter location, brand number, heating price, day count, then temperatures:\n";
 if (!(std::cin >> month))
 {
     std::cerr << "Invalid input.\n";
@@ -256,5 +287,6 @@ On invalid input, the destination remains unchanged. Input already consumed is n
 3. Move a month and display both source and destination.
 4. Compare the results of `month++` and `++month`.
 5. Test empty objects, self-assignment, and invalid indices.
-6. Read `0`, `3 -2 0 4.5`, an invalid count, and non-numeric input.
+6. Read `Bucharest 1 2.5 0`, `Cluj 2 1.5 3 -2 0 4.5`, a negative price, an invalid brand or count, and non-numeric readings.
 7. Add `operator!=` using `operator==`.
+8. Check that construction increases the live-object counter, assignment leaves it unchanged, and destruction decreases it.
