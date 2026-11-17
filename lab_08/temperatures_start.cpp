@@ -1,22 +1,19 @@
 #include <iostream>
 #include <string>
-#include <utility>
 
 enum class Brand { GENERIC, OMRON, BEURER };
 
-class MonthlyTemperatures
+class Thermostat
 {
     std::string location = "Unknown";
     Brand brand = Brand::GENERIC;
     float heatingPrice = 0.0F;
     double* temperatures = nullptr;
-    int dayCount = 0;
+    int entriesTemp = 0;
     static unsigned int objectCount;
 
 public:
-    static const int MAX_DAYS = 31;
-
-    MonthlyTemperatures()
+    Thermostat()
     {
         objectCount++;
     }
@@ -45,9 +42,9 @@ public:
 
         std::cout << location << " | brand: " << brandName
             << " | heating price: " << heatingPrice
-            << " | Readings (" << dayCount << "):";
+            << " | Readings (" << entriesTemp << "):";
 
-        for (int i = 0; i < dayCount; i++)
+        for (int i = 0; i < entriesTemp; i++)
         {
             std::cout << ' ' << temperatures[i];
         }
@@ -55,18 +52,18 @@ public:
         std::cout << std::endl;
     }
 
-    ~MonthlyTemperatures()
+    ~Thermostat()
     {
         delete[] temperatures;
         objectCount--;
     }
 };
 
-unsigned int MonthlyTemperatures::objectCount = 0;
+unsigned int Thermostat::objectCount = 0;
 
 int main()
 {
-    MonthlyTemperatures month;
+    Thermostat month;
     month.print();
-    std::cout << "Objects: " << MonthlyTemperatures::getObjectCount() << std::endl;
+    std::cout << "Objects: " << Thermostat::getObjectCount() << std::endl;
 }
