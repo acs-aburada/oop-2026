@@ -31,8 +31,8 @@ class ElectricityAccount {
     static unsigned int totalAccounts;
 
 public:
-    const static int MIN_PRICE = 0.5;
-    const static int MIN_PRICE_INDUSTRIAL = 1.2;
+    static const float MIN_PRICE;
+    static const float MIN_PRICE_INDUSTRIAL;
     const static int RESIDENTIAL_DISCOUNT_THRESHOLD = 150;
 
 //0.25p - Implement a getter for the monthly consumption array and a getter for the customer name.
@@ -59,16 +59,18 @@ public:
     }
 
 //0.25p - Implement a setter for the monthly consumption that validates the received array exists and all values are non-negative
-    void setMonthlyConsumption(const double const* arr, const unsigned int size) {
+    void setMonthlyConsumption(const double* arr, const unsigned int size) {
         if (size <= 0 || arr == nullptr) {
             throw std::exception("ERROR: Monthly Consumption array cannot be empty!");
         }
-        delete[] this->monthlyConsumption;
-        this->monthlyConsumption = new double[size];
         for (unsigned int i = 0; i < size; i++) {
             if (arr[i] < 0) {
                 throw std::exception("ERROR: Monthly Consumption cannot be negative!");
             }
+        }
+        delete[] this->monthlyConsumption;
+        this->monthlyConsumption = new double[size];
+        for (unsigned int i = 0; i < size; i++) {
             this->monthlyConsumption[i] = arr[i];
         }
         this->numberOfMonths = size;
@@ -79,16 +81,16 @@ public:
 //0.25p - Implement a constructor that receives ONLY customer name, monthly consumption, number of months and price per KWh. 
 // Customer type is set by default to RESIDENTIAL. 
 // Customer name must have at least 3 chars and price per KWh must be at least 0.5
-    ElectricityAccount(const std::string& customerName, const double const* monthlyConsumption, 
+    ElectricityAccount(const std::string& customerName, const double* monthlyConsumption, 
         const unsigned int noMonths, const float pricePerKWh) : customerType(CustomerType::RESIDENTIAL){
         ElectricityAccount::totalAccounts++;
 
-        if (customerName.size() <= 3) {
+        if (customerName.size() < 3) {
             throw std::exception("ERROR: Customer name must have at least 3 chars!");
         }
         this->customerName = customerName;
 
-        if (pricePerKWh <= 0.5) {
+        if (pricePerKWh < ElectricityAccount::MIN_PRICE) {
             throw std::exception("ERROR: Price per KWh must be at least 0.5!");
         }
         this->pricePerKWh = pricePerKWh;
@@ -128,25 +130,25 @@ public:
 
 //0.5p - Implement the constructor with all parameters. Respect the following validation(and the previous rules) validation rules : INDUSTRIAL clients must have a price per KWh of minimum 1.2.
 // Don't use magic numbers.
-    ElectricityAccount(const std::string& customerName, const double const* monthlyConsumption,
+    ElectricityAccount(const std::string& customerName, const double* monthlyConsumption,
         const unsigned int noMonths, const float pricePerKWh, const CustomerType customerType) {
-        ElectricityAccount::totalAccounts++;
-
-        if (customerName.size() <= 3) {
+        if (customerName.size() < 3) {
             throw std::exception("ERROR: Customer name must have at least 3 chars!");
         }
         this->customerName = customerName;
 
-        if (pricePerKWh <= ElectricityAccount::MIN_PRICE) {
+        if (pricePerKWh < ElectricityAccount::MIN_PRICE) {
             throw std::exception("ERROR: Price per KWh must be at least 0.5!");
         }
-        else if (customerType == CustomerType::INDUSTRIAL && pricePerKWh <= ElectricityAccount::MIN_PRICE_INDUSTRIAL) {
+        else if (customerType == CustomerType::INDUSTRIAL && pricePerKWh < ElectricityAccount::MIN_PRICE_INDUSTRIAL) {
             throw std::exception("ERROR: Price per KWh for INDUSTRIAL customers must be at least 1.2!");
         }
         this->pricePerKWh = pricePerKWh;
 
         this->setMonthlyConsumption(monthlyConsumption, noMonths);
         this->customerType = customerType;
+
+        ElectricityAccount::totalAccounts++;
     }
 
 //0.25p - Implement the class destructor to clean objects space
@@ -218,6 +220,8 @@ public:
 };
 
 unsigned int ElectricityAccount::totalAccounts = 0;
+const float ElectricityAccount::MIN_PRICE = 0.5f;
+const float ElectricityAccount::MIN_PRICE_INDUSTRIAL = 1.2f;
 
 int main()
 {
@@ -241,7 +245,7 @@ int main()
 
 //0.5p - Test the previous constructor in main() and create a new object.
     double consumption3[4] = { 4.2, 0.25, 1.7, 5.1 };
-    ElectricityAccount acc3("John Doe", consumption3, 4, 2.6);
+    ElectricityAccount acc3("John Doe", consumption3, 4, 2.6f);
     double* consumptionAcc3 = acc3.getMonthlyConsumption();
     std::cout << "Consumption array of acc3: ";
     for (unsigned int i = 0; i < acc3.getNumberOfMonths(); i++) {
@@ -255,7 +259,7 @@ int main()
 
 //0.5p - Test the previous constructor in main with values that show the previous validation works. 
 //    Display the values of the new object with the previous method.
-    ElectricityAccount acc4("John Doe", consumption1, 4, 1.6, CustomerType::BUSINESS);
+    ElectricityAccount acc4("John Doe", consumption1, 4, 1.6f, CustomerType::BUSINESS);
     acc4.print();
 
     //ElectricityAccount acc5("John Doe", consumption3, 4, 0.6, CustomerType::INDUSTRIAL); // <- this crashed the program - as intended
@@ -272,9 +276,9 @@ int main()
     double businessConsumption[] = { 100, 200, 300 };
     double industrialConsumption[] = { 100, 200, 300 };
 
-    ElectricityAccount residential("Alice", residentialConsumption, 3, 1.0);
-    ElectricityAccount business("Bobby", businessConsumption, 3, 1.0, CustomerType::BUSINESS);
-    ElectricityAccount industrial("Charlie", industrialConsumption, 3, 1.2, CustomerType::INDUSTRIAL);
+    ElectricityAccount residential("Alice", residentialConsumption, 3, 1.0f);
+    ElectricityAccount business("Bobby", businessConsumption, 3, 1.0f, CustomerType::BUSINESS);
+    ElectricityAccount industrial("Charlie", industrialConsumption, 3, 1.2f, CustomerType::INDUSTRIAL);
 
     std::cout << "\nTesting electricity bills:\n";
 
@@ -301,15 +305,18 @@ int main()
     double consumptionC[] = { 0, 100, 110, 200 };
     double consumptionD[] = { 100 };
 
-    ElectricityAccount accA("Test A", consumptionA, 6, 1.0);
-    ElectricityAccount accB("Test B", consumptionB, 4, 1.0);
-    ElectricityAccount accC("Test C", consumptionC, 4, 1.0);
-    ElectricityAccount accD("Test D", consumptionD, 1, 1.0);
+    ElectricityAccount accA("Test A", consumptionA, 6, 1.0f);
+    ElectricityAccount accB("Test B", consumptionB, 4, 1.0f);
+    ElectricityAccount accC("Test C", consumptionC, 4, 1.0f);
+    ElectricityAccount accD("Test D", consumptionD, 1, 1.0f);
 
     std::cout << "\nTesting abnormal growth (threshold = 0.30):\n";
 
-    std::cout << "Account A: " << accA.abnormalGrowth(0.30) << std::endl;
-    std::cout << "Account B: " << accB.abnormalGrowth(0.30) << std::endl;
-    std::cout << "Account C: " << accC.abnormalGrowth(0.30) << std::endl;
-    std::cout << "Account D: " << accD.abnormalGrowth(0.30) << std::endl;
+    std::cout << "Account A: " << accA.abnormalGrowth(0.30f) << std::endl;
+    std::cout << "Account B: " << accB.abnormalGrowth(0.30f) << std::endl;
+    std::cout << "Account C: " << accC.abnormalGrowth(0.30f) << std::endl;
+    std::cout << "Account D: " << accD.abnormalGrowth(0.30f) << std::endl;
+
+    delete[] consumptionAcc1;
+    delete[] consumptionAcc3;
 }
