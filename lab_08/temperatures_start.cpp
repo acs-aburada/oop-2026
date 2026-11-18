@@ -120,6 +120,7 @@ public:
     ~Thermostat()
     {
         delete[] temperatures;
+        temperatures = nullptr;
         objectCount--;
     }
 };
