@@ -61,11 +61,11 @@ public:
 //0.25p - Implement a setter for the monthly consumption that validates the received array exists and all values are non-negative
     void setMonthlyConsumption(const double* arr, const unsigned int size) {
         if (size <= 0 || arr == nullptr) {
-            throw std::exception("ERROR: Monthly Consumption array cannot be empty!");
+            throw "ERROR: Monthly Consumption array cannot be empty!";
         }
         for (unsigned int i = 0; i < size; i++) {
             if (arr[i] < 0) {
-                throw std::exception("ERROR: Monthly Consumption cannot be negative!");
+                throw "ERROR: Monthly Consumption cannot be negative!";
             }
         }
         delete[] this->monthlyConsumption;
@@ -86,12 +86,12 @@ public:
         ElectricityAccount::totalAccounts++;
 
         if (customerName.size() < 3) {
-            throw std::exception("ERROR: Customer name must have at least 3 chars!");
+            throw "ERROR: Customer name must have at least 3 chars!";
         }
         this->customerName = customerName;
 
         if (pricePerKWh < ElectricityAccount::MIN_PRICE) {
-            throw std::exception("ERROR: Price per KWh must be at least 0.5!");
+            throw "ERROR: Price per KWh must be at least 0.5!";
         }
         this->pricePerKWh = pricePerKWh;
 
@@ -133,15 +133,15 @@ public:
     ElectricityAccount(const std::string& customerName, const double* monthlyConsumption,
         const unsigned int noMonths, const float pricePerKWh, const CustomerType customerType) {
         if (customerName.size() < 3) {
-            throw std::exception("ERROR: Customer name must have at least 3 chars!");
+            throw "ERROR: Customer name must have at least 3 chars!";
         }
         this->customerName = customerName;
 
         if (pricePerKWh < ElectricityAccount::MIN_PRICE) {
-            throw std::exception("ERROR: Price per KWh must be at least 0.5!");
+            throw "ERROR: Price per KWh must be at least 0.5!";
         }
         else if (customerType == CustomerType::INDUSTRIAL && pricePerKWh < ElectricityAccount::MIN_PRICE_INDUSTRIAL) {
-            throw std::exception("ERROR: Price per KWh for INDUSTRIAL customers must be at least 1.2!");
+            throw "ERROR: Price per KWh for INDUSTRIAL customers must be at least 1.2!";
         }
         this->pricePerKWh = pricePerKWh;
 
@@ -155,6 +155,7 @@ public:
     ~ElectricityAccount() {
         ElectricityAccount::totalAccounts--;
         delete[] this->monthlyConsumption;
+        this->monthlyConsumption = nullptr;
         std::cout << std::endl << "Destructor called" << std::endl;
     }
 
